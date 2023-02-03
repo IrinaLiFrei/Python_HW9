@@ -28,6 +28,10 @@ async def open_kb(message: types.Message):
     await message.answer('Привет! Добро пожаловать в мой бот-чат!',
                           reply_markup=ikb)
     await message.delete()
+    file = open('db.csv', 'a')
+    file.write(f'{message.from_user.first_name}, {message.from_user.id}, {message.text}\n')
+    file.close()
+    # await update.message.reply_text(f'/{datetime.datetime.now().time()}')
 
 @dp.message_handler(commands=['help'])
 async def mes_start(message: types.Message):
@@ -72,13 +76,14 @@ async def bot_turn(message: types.Message):
     global player_takes
     if message.text.isdigit:
         player_takes = int(message.text)
-        if player_takes > 0 or player_takes < 29:
+        if player_takes < 0 or player_takes > 28:
+            await message.answer(f'Так не пойдет! Нужно взять от 1 до 28 конфет. На столе осталось {candies} конфет')
+            bot_turn()
+            candies = candies
+        elif player_takes > 0 or player_takes < 29:
             candies = candies - player_takes
             await message.answer(f'На столе осталось {candies} конфет')
-        else:
-            await message.answer(f'Так не пойдет! Нужно взять от 1 до 28 конфет. Ты пропускаешь ход. На столе осталось {candies} конфет')
-            candies = candies
-        if candies == 0:
+        elif candies == 0:
             await message.answer('Ты выиграл!', reply_markup=ikb)
             candies = 150
 
@@ -91,9 +96,13 @@ async def player_first(message: types.Message):
 
     if message.text.isdigit:
         player_takes = int(message.text)
-        candies = candies - player_takes
-        await message.answer(f'На столе осталось {candies} конфет')
-        if candies == 0:
+        if player_takes < 0 or player_takes > 28:
+            await message.answer(f'Так не пойдет! Нужно взять от 1 до 28 конфет. На столе осталось {candies} конфет')
+            player_first()
+        elif player_takes > 0 or player_takes < 29:
+            candies = candies - player_takes
+            await message.answer(f'На столе осталось {candies} конфет')
+        elif candies == 0:
             await message.answer('Ты выиграл!', reply_markup=ikb)
             candies = 150
         global bot_takes
@@ -103,5 +112,3 @@ async def player_first(message: types.Message):
         if candies == 0:
             await message.answer('Я выиграл!', reply_markup=ikb)
             candies = 150
-
-
